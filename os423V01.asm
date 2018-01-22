@@ -12,14 +12,23 @@
 
 
 	;bit16			;16bit by default
-	;org 0x100		;use as .com 
+	org 0x7c00		;use as .com 
 
 	jmp short start
-	;nop
+	nop
+	bsOEM	db "OS423 v.0.1"               ; OEM String
 
 start:
-	;mov al, 0c9h
-	;mov dl,  0
+
+	mov ah,13h		;Function 13h (display string), XT machine only
+	mov al,1		;Write mode is zero: cursor stay after last char
+	mov bh,0		;Use video page of zero
+	mov bl,72h		;Attribute (blue on gray)
+	mov cx,mlen2		;Character string length
+	mov dh,10		;Position on row 0
+	mov dl,1		;And column 0
+	lea bp,[msg2]	;Load the offset address of string into BP, es:bp
+	int 10h
 
 	mov ah, 2		;set cursor location
 	mov bh, 0		;page=0
@@ -166,5 +175,55 @@ printLeft:
 	cmp bp, 17h
 	jne printLeft
 
+mov ah,13h		;Function 13h (display string), XT machine only
+mov al,1		;Write mode is zero: cursor stay after last char
+mov bh,0		;Use video page of zero
+mov bl,71h		;Attribute (blue on gray)
+mov cx,mlen		;Character string length
+mov dh,1		;Position on row 0
+mov dl,1		;And column 0
+lea bp,[msg]	;Load the offset address of string into BP, es:bp
+int 10h
+
+mov ah, 10h
+int 16h
+cmp al, 0dh
+
+xor cx,cx
+mov dh,19h
+mov dl,50h
+mov bh,7
+mov ax,700h
+int 10h
+
+mov ah,13h		;Function 13h (display string), XT machine only
+mov al,1		;Write mode is zero: cursor stay after last char
+mov bh,0		;Use video page of zero
+mov bl,0dh
+mov cx,mlen4		;Character string length
+mov dh,0		;Position on row 0
+mov dl,0		;And column 0
+lea bp,[msg4]	;Load the offset address of string into BP, es:bp
+int 10h
+
 int 20h
+	
+
+msg db 'GLOS, Gillian Lemke, version 0.1, current 0.1 2018 $'
+mlen equ $-msg
+
+msg2 db '  ___ _    ___  ___ ',10,13,'  / __| |  / _ \/ __|',10,13,' | (_ | |_| (_) \__ \',10,13,'  \___|____\___/|___/'
+mlen2 equ $-msg2
+
+;msg3 db '   _   __',10,13,'      (_\-`  `.',10,13,'         `---`',10,13
+msg3 db ''
+mlen3 equ $-msg3
+
+msg4 db '$'
+mlen4 equ $-msg4
+
+padding	times 510-($-$$) db 0		;to make MBR 512 bytes
+bootSig	db 0x55, 0xaa		;signature (optional)
+
+
 
