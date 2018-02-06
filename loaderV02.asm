@@ -34,6 +34,8 @@ start:
   call cvtsec
   call dsptime
 
+  jmp word 0x0000:0x7d34
+
   int 20h ;halt operation (VERY IMPORTANT!!!)
 
 cls:			 

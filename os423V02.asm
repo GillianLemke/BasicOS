@@ -174,7 +174,6 @@ mov dl,1		;And column 0
 lea bp,[msg]	;Load the offset address of string into BP, es:bp
 int 10h
 
-
 ;;;load 2nd sector and run
 	mov bx, 0x0000			;es:bx input buffer, temporary set 0x0000:1234
 	mov es, bx
@@ -189,6 +188,26 @@ int 10h
 
 	jmp word 0x0000:0x1234	;Run program on sector 1, ex:bx
 
+mov ah, 10h
+int 16h
+cmp al, 0dh
+
+xor cx, cx
+mov dh, 19h
+mov dl, 50h
+mov bh, 7
+mov ax, 700h
+int 10h
+
+mov ah, 13h
+mov al, 1
+mov bh, 0
+mov bl, 0ah
+mov cx, mlen4
+mov dh, 0
+mov dl, 0
+lea bp, [msg4]
+int 10h
 
 int 20h
 	
