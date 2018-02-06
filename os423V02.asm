@@ -174,26 +174,21 @@ mov dl,1		;And column 0
 lea bp,[msg]	;Load the offset address of string into BP, es:bp
 int 10h
 
-mov ah, 10h
-int 16h
-cmp al, 0dh
 
-xor cx,cx
-mov dh,19h
-mov dl,50h
-mov bh,7
-mov ax,700h
-int 10h
+;;;load 2nd sector and run
+	mov bx, 0x0000			;es:bx input buffer, temporary set 0x0000:1234
+	mov es, bx
+	mov bx, 0x1234
+	mov ah, 02h				;Function 02h (read sector)
+	mov al, 1				;Read one sector
+	mov ch, 0				;Cylinder#
+	mov cl, 2				;Sector# --> 2 has program
+	mov dh, 0				;Head# --> logical sector 1
+	mov dl, 0				;Drive# A, 08h=C
+	int 13h
 
-mov ah,13h		;Function 13h (display string), XT machine only
-mov al,1		;Write mode is zero: cursor stay after last char
-mov bh,0		;Use video page of zero
-mov bl,0dh
-mov cx,mlen4		;Character string length
-mov dh,0		;Position on row 0
-mov dl,0		;And column 0
-lea bp,[msg4]	;Load the offset address of string into BP, es:bp
-int 10h
+	jmp word 0x0000:0x1234	;Run program on sector 1, ex:bx
+
 
 int 20h
 	
