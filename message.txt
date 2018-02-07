@@ -1,0 +1,5 @@
+My name is Gillian Lemke and you are working on my OS! 
+It is called GLOS. GL for my initials and OS for, you know.
+It is pretty cool and has some fun colors. Right now it can
+display the time and this message of course. 
+Happy hacking!

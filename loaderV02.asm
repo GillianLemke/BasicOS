@@ -34,7 +34,7 @@ start:
   call cvtsec
   call dsptime
 
-  jmp word 0x0000:0x7d34
+  jmp word 0x0000:0x7c2b
 
   int 20h ;halt operation (VERY IMPORTANT!!!)
 

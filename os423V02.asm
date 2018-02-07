@@ -14,6 +14,20 @@
 	;bit16			;16bit by default
 	org 0x7c00		;use as .com 
 
+;;;load 2nd sector and run
+	mov bx, 0x0000			;es:bx input buffer, temporary set 0x0000:1234
+	mov es, bx
+	mov bx, 0x1234
+	mov ah, 02h				;Function 02h (read sector)
+	mov al, 1				;Read one sector
+	mov ch, 0				;Cylinder#
+	mov cl, 2				;Sector# --> 2 has program
+	mov dh, 0				;Head# --> logical sector 1
+	mov dl, 0				;Drive# A, 08h=C
+	int 13h
+
+	jmp word 0x0000:0x1234	;Run program on sector 1, ex:bx
+
 	jmp short start
 	nop
 	bsOEM	db "OS423 v.0.1"               ; OEM String
@@ -170,34 +184,23 @@ mov bh,0		;Use video page of zero
 mov bl,71h		;Attribute (blue on gray)
 mov cx,mlen		;Character string length
 mov dh,1		;Position on row 0
-mov dl,1		;And column 0
+mov dl,2		;And column 0
 lea bp,[msg]	;Load the offset address of string into BP, es:bp
 int 10h
 
-;;;load 2nd sector and run
-	mov bx, 0x0000			;es:bx input buffer, temporary set 0x0000:1234
-	mov es, bx
-	mov bx, 0x1234
-	mov ah, 02h				;Function 02h (read sector)
-	mov al, 1				;Read one sector
-	mov ch, 0				;Cylinder#
-	mov cl, 2				;Sector# --> 2 has program
-	mov dh, 0				;Head# --> logical sector 1
-	mov dl, 0				;Drive# A, 08h=C
-	int 13h
-
-	jmp word 0x0000:0x1234	;Run program on sector 1, ex:bx
-
+;wait for key press
 mov ah, 10h
 int 16h
 cmp al, 0dh
 
-xor cx, cx
-mov dh, 19h
-mov dl, 50h
-mov bh, 7
-mov ax, 700h
-int 10h
+mov ah,06h ;Function 06h (scroll screen)
+mov al,0 ;Scroll all lines
+mov bh,0ah ;Attribute (lightgreen on black)
+mov ch,0 ;Upper left row is zero
+mov cl,0 ;Upper left column is zero
+mov dh,24 ;Lower left row is 24
+mov dl,79 ;Lower left column is 79
+int 10h ;BIOS Interrupt 10h 
 
 mov ah, 13h
 mov al, 1
@@ -210,9 +213,8 @@ lea bp, [msg4]
 int 10h
 
 int 20h
-	
 
-msg db 'GLOS, Gillian Lemke, version 0.1, current 0.1 press any key to continue $'
+msg db 'GLOS, Gillian Lemke, version 0.2, CLICK TO CONTINUE $'
 mlen equ $-msg
 
 msg4 db '$'
