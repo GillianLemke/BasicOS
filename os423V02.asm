@@ -217,7 +217,7 @@ int 20h
 msg db 'GLOS, Gillian Lemke, version 0.2, CLICK TO CONTINUE $'
 mlen equ $-msg
 
-msg4 db '$'
+msg4 db 'This OS is called GLOS',10,13,'Right now it can display the time and this message',10,13,'Happy hacking!',10,13,'$'
 mlen4 equ $-msg4
 
 padding	times 510-($-$$) db 0		;to make MBR 512 bytes
