@@ -29,10 +29,52 @@ start:
 				; same as mov bp, msg
   int 10h		; BIOS interrupt 10h (video services)
 
+;ctrl-c
+
+keyin:
+	mov ah, 0
+	int 16h
+	cmp ax, 0x2e03
+	cmp ax, 0x2004
+	jne keyin
+
+
+  ; display string without using BIOS int 10h
+  mov ax, 3					; set VGA mode (text)
+  int 0x10
+
+  mov dx, 0xB800			; beginning of display memory
+  mov es, dx		
+
+  mov si, TextHelloWorld 	; point si at the string 
+
+  mov cx, 0
+  ForEachChar:		  		; begin loop
+
+    lodsb					; load al with [si], increment si
+    cmp al, 0x00	   			; if char is null
+    je EndForEachChar 		; then break out of the loop
+
+    mov di, cx				; offset of current character
+
+    mov [es:di], al			; write the character to memory
+
+    inc cx					; there are two bytes per character
+    inc cx					; so increment cx twice
+
+    jmp ForEachChar	   	; jump back to beginning of loop
+  EndForEachChar:	   	; end of the loop
+
+  ret						; quit the program
+
   ; optional extra display or others
   ; code to lad 2nd sector to 0001:2345 and execute
-  ; 512 and 55aa
 
-
-msg db 'Hello 423 by Gillian Lemke'
+; data values
+msg db ''
 mlen equ $-msg
+TextHelloWorld: db 'Hello 423 by Gillian Lemke ',0
+
+; 512 and 55aa
+padding	times 510-($-$$) db 0		;to make MBR 512 bytes
+bootSig	db 0x55, 0xaa		;signature (optional)
