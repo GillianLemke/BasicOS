@@ -1,0 +1,301 @@
+     1                                  org 0x1234
+     2                                  
+     3 00000000 C606[DD01]32            	mov byte[msg1], '2'
+     4                                  	
+     5 00000005 B413                    	mov ah,13h		;Function 13h (display string), XT machine only
+     6 00000007 B001                    	mov al,1		;Write mode is zero: cursor stay after last char
+     7 00000009 B700                    	mov bh,0		;Use video page of zero
+     8 0000000B B37E                    	mov bl,7eh		;Attribute (yellow on black)
+     9 0000000D B90E00                  	mov cx,mlen1		;Character string length
+    10 00000010 B603                    	mov dh,3		;Position on row 3
+    11 00000012 B202                    	mov dl,2		;And column 2
+    12 00000014 8D2E[DD01]              	lea bp,[msg1]	;Load the offset address of string into BP, es:bp
+    13                                  					;Same as mov bp, msg  
+    14 00000018 CD10                    	int 10h
+    15                                  
+    16                                  	[BITS 16]               ;Set code generation to 16 bit mode
+    17                                  
+    18                                  
+    19                                  
+    20                                  start:
+    21                                    ;call cls	;call routine to clear screen
+    22 0000001A E87E00                    call dspmsg	;call routine to display message
+    23                                  
+    24 0000001D E89D00                    call date
+    25 00000020 E89F00                    call cvtmo
+    26 00000023 E8BA00                    call cvtday
+    27 00000026 E8D500                    call cvtcent
+    28 00000029 E8F000                    call cvtyear
+    29 0000002C E81501                    call dspdate
+    30                                    
+    31 0000002F E82A01                    call time
+    32 00000032 E82C01                    call cvthrs
+    33 00000035 E84701                    call cvtmin
+    34 00000038 E86201                    call cvtsec
+    35 0000003B E88501                    call dsptime
+    36                                  
+    37 0000003E EA2B7C0000               jmp word 0x0000:0x7c2b
+    38                                  
+    39                                    ;wait for key press
+    40 00000043 B410                      mov ah, 10h
+    41 00000045 CD16                      int 16h
+    42 00000047 3C0D                      cmp al, 0dh
+    43                                  
+    44 00000049 B406                      mov ah,06h ;Function 06h (scroll screen)
+    45 0000004B B000                    mov al,0 ;Scroll all lines
+    46 0000004D B70A                    mov bh,0ah ;Attribute (lightgreen on black)
+    47 0000004F B500                    mov ch,0 ;Upper left row is zero
+    48 00000051 B100                    mov cl,0 ;Upper left column is zero
+    49 00000053 B618                    mov dh,24 ;Lower left row is 24
+    50 00000055 B24F                    mov dl,79 ;Lower left column is 79
+    51 00000057 CD10                    int 10h ;BIOS Interrupt 10h 
+    52                                  
+    53 00000059 B413                    mov ah, 13h
+    54 0000005B B001                    mov al, 1
+    55 0000005D B700                    mov bh, 0
+    56 0000005F B30A                    mov bl, 0ah
+    57 00000061 B90100                  mov cx, mlen4
+    58 00000064 B600                    mov dh, 0
+    59 00000066 B200                    mov dl, 0
+    60 00000068 8D2E[D502]              lea bp, [msg4]
+    61 0000006C CD10                    int 10h
+    62                                  
+    63 0000006E B413                      mov ah,13h		;Function 13h (display string), XT machine only
+    64 00000070 B001                      mov al,1		;Write mode is zero: cursor stay after last char
+    65 00000072 B700                      mov bh,0		;Use video page of zero
+    66 00000074 B31F                      mov bl,1fh		;Attribute (blue on gray)
+    67 00000076 B9EA00                    mov cx,mlen2		;Character string length
+    68 00000079 B601                      mov dh,1		;Position on row 1
+    69 0000007B B203                      mov dl,3		;And column 3
+    70 0000007D 8D2E[EB01]                lea bp,[msg2]	;Load the offset address of string into BP, es:bp
+    71 00000081 CD10                      int 10h
+    72                                  
+    73 00000083 EA4F7C0000                jmp word 0x0000:0x7c4f
+    74                                  
+    75 00000088 CD20                      int 20h ;halt operation (VERY IMPORTANT!!!)
+    76                                  
+    77                                  cls:			 
+    78 0000008A B406                      mov ah,06h	;function 06h (Scroll Screen)
+    79 0000008C B000                      mov al,0	;scroll all lines
+    80 0000008E B71F                      mov bh,1FH	;Attribute (bright white on blue)
+    81 00000090 B500                      mov ch,0	;Upper left row is zero
+    82 00000092 B100                      mov cl,0	;Upper left column is zero
+    83 00000094 B618                      mov dh,24	;Lower left row is 24
+    84 00000096 B24F                      mov dl,79	;Lower left column is 79
+    85 00000098 CD10                      int 10H	;BIOS Interrupt 10h (video services)
+    86 0000009A C3                        ret
+    87                                  
+    88                                  
+    89                                  dspmsg: 
+    90 0000009B B413                      mov ah,13h	;function 13h (Display String)
+    91 0000009D B000                      mov al,0	;Write mode is zero
+    92 0000009F B700                      mov bh,0	;Use video page of zero
+    93 000000A1 B374                      mov bl,74h	;Attribute (bright white on bright blue)
+    94 000000A3 B90800                    mov cx,8	;Character string is 25 long
+    95 000000A6 B604                      mov dh,4	;position on row 4
+    96 000000A8 B202                      mov dl,2	;and column 2
+    97 000000AA 1E                        push ds		;put ds register on stack
+    98 000000AB 07                        pop es		;pop it into es register
+    99 000000AC 8D2E[B300]                lea bp,[msg]	;load the offset address of string into BP
+   100 000000B0 CD10                      int 10H
+   101 000000B2 C3                        ret
+   102                                   	
+   103 000000B3 47696C6C69616E203A-     msg: db 'Gillian :D'
+   104 000000BC 44                 
+   105                                  
+   106                                  date:
+   107                                  ;Get date from the system
+   108 000000BD B404                    mov ah,04h	 ;function 04h (get RTC date)
+   109 000000BF CD1A                    int 1Ah		;BIOS Interrupt 1Ah (Read Real Time Clock)
+   110 000000C1 C3                      ret
+   111                                  
+   112                                  ;CH - Century
+   113                                  ;CL - Year
+   114                                  ;DH - Month
+   115                                  ;DL - Day
+   116                                  
+   117                                  cvtmo:
+   118                                  ;Converts the system date from BCD to ASCII
+   119 000000C2 88F7                    mov bh,dh ;copy contents of month (dh) to bh
+   120 000000C4 D0EF                    shr bh,1
+   121 000000C6 D0EF                    shr bh,1
+   122 000000C8 D0EF                    shr bh,1
+   123 000000CA D0EF                    shr bh,1
+   124 000000CC 80C730                  add bh,30h ;add 30h to convert to ascii
+   125 000000CF 883E[3A01]              mov [dtfld],bh
+   126 000000D3 88F7                    mov bh,dh
+   127 000000D5 80E70F                  and bh,0fh
+   128 000000D8 80C730                  add bh,30h
+   129 000000DB 883E[3B01]              mov [dtfld + 1],bh
+   130 000000DF C3                      ret
+   131                                  
+   132                                  cvtday:
+   133 000000E0 88D7                    mov bh,dl ;copy contents of day (dl) to bh
+   134 000000E2 D0EF                    shr bh,1
+   135 000000E4 D0EF                    shr bh,1
+   136 000000E6 D0EF                    shr bh,1
+   137 000000E8 D0EF                    shr bh,1
+   138 000000EA 80C730                  add bh,30h ;add 30h to convert to ascii
+   139 000000ED 883E[3D01]              mov [dtfld + 3],bh
+   140 000000F1 88D7                    mov bh,dl
+   141 000000F3 80E70F                  and bh,0fh
+   142 000000F6 80C730                  add bh,30h
+   143 000000F9 883E[3E01]              mov [dtfld + 4],bh
+   144 000000FD C3                      ret
+   145                                  
+   146                                  cvtcent:
+   147 000000FE 88EF                    mov bh,ch ;copy contents of century (ch) to bh
+   148 00000100 D0EF                    shr bh,1
+   149 00000102 D0EF                    shr bh,1
+   150 00000104 D0EF                    shr bh,1
+   151 00000106 D0EF                    shr bh,1
+   152 00000108 80C730                  add bh,30h ;add 30h to convert to ascii
+   153 0000010B 883E[4001]              mov [dtfld + 6],bh
+   154 0000010F 88EF                    mov bh,ch
+   155 00000111 80E70F                  and bh,0fh
+   156 00000114 80C730                  add bh,30h
+   157 00000117 883E[4101]              mov [dtfld + 7],bh
+   158 0000011B C3                      ret
+   159                                  
+   160                                  cvtyear:
+   161 0000011C 88CF                    mov bh,cl ;copy contents of year (cl) to bh
+   162 0000011E D0EF                    shr bh,1
+   163 00000120 D0EF                    shr bh,1
+   164 00000122 D0EF                    shr bh,1
+   165 00000124 D0EF                    shr bh,1
+   166 00000126 80C730                  add bh,30h ;add 30h to convert to ascii
+   167 00000129 883E[4201]              mov [dtfld + 8],bh
+   168 0000012D 88CF                    mov bh,cl
+   169 0000012F 80E70F                  and bh,0fh
+   170 00000132 80C730                  add bh,30h
+   171 00000135 883E[4301]              mov [dtfld + 9],bh
+   172 00000139 C3                      ret
+   173                                  
+   174 0000013A 30302F30302F303030-     dtfld: db '00/00/0000'
+   175 00000143 30                 
+   176                                  
+   177                                  dspdate:
+   178                                  ;Display the system date
+   179 00000144 B413                    mov ah,13h ;function 13h (Display String)
+   180 00000146 B000                    mov al,0 ;Write mode is zero
+   181 00000148 B700                    mov bh,0 ;Use video page of zero
+   182 0000014A B374                    mov bl,74h ;Attribute
+   183 0000014C B90A00                  mov cx,10 ;Character string is 10 long
+   184 0000014F B605                    mov dh,5 ;position on row 5
+   185 00000151 B202                    mov dl,2 ;and column 2
+   186 00000153 1E                      push ds ;put ds register on stack
+   187 00000154 07                      pop es ;pop it into es register
+   188 00000155 8D2E[3A01]              lea bp,[dtfld] ;load the offset address of string into BP
+   189 00000159 CD10                    int 10H
+   190 0000015B C3                      ret
+   191                                  
+   192                                  time:
+   193                                  ;Get time from the system
+   194 0000015C B402                    mov ah,02h
+   195 0000015E CD1A                    int 1Ah
+   196 00000160 C3                      ret
+   197                                  
+   198                                  ;CH - Hours
+   199                                  ;CL - Minutes
+   200                                  ;DH - Seconds
+   201                                  
+   202                                  cvthrs:
+   203                                  ;Converts the system time from BCD to ASCII
+   204 00000161 88EF                    mov bh,ch ;copy contents of hours (ch) to bh
+   205 00000163 D0EF                    shr bh,1
+   206 00000165 D0EF                    shr bh,1
+   207 00000167 D0EF                    shr bh,1
+   208 00000169 D0EF                    shr bh,1
+   209 0000016B 80C730                  add bh,30h ;add 30h to convert to ascii
+   210 0000016E 883E[BB01]              mov [tmfld],bh
+   211 00000172 88EF                    mov bh,ch
+   212 00000174 80E70F                  and bh,0fh
+   213 00000177 80C730                  add bh,30h
+   214 0000017A 883E[BC01]              mov [tmfld + 1],bh
+   215 0000017E C3                      ret
+   216                                  
+   217                                  cvtmin:
+   218 0000017F 88CF                    mov bh,cl ;copy contents of minutes (cl) to bh
+   219 00000181 D0EF                    shr bh,1
+   220 00000183 D0EF                    shr bh,1
+   221 00000185 D0EF                    shr bh,1
+   222 00000187 D0EF                    shr bh,1
+   223 00000189 80C730                  add bh,30h ;add 30h to convert to ascii
+   224 0000018C 883E[BE01]              mov [tmfld + 3],bh
+   225 00000190 88CF                    mov bh,cl
+   226 00000192 80E70F                  and bh,0fh
+   227 00000195 80C730                  add bh,30h
+   228 00000198 883E[BF01]              mov [tmfld + 4],bh
+   229 0000019C C3                      ret
+   230                                  
+   231                                  cvtsec:
+   232 0000019D 88F7                    mov bh,dh ;copy contents of seconds (dh) to bh
+   233 0000019F D0EF                    shr bh,1
+   234 000001A1 D0EF                    shr bh,1
+   235 000001A3 D0EF                    shr bh,1
+   236 000001A5 D0EF                    shr bh,1
+   237 000001A7 80C730                  add bh,30h ;add 30h to convert to ascii
+   238 000001AA 883E[C101]              mov [tmfld + 6],bh
+   239 000001AE 88F7                    mov bh,dh
+   240 000001B0 80E70F                  and bh,0fh
+   241 000001B3 80C730                  add bh,30h
+   242 000001B6 883E[C201]              mov [tmfld + 7],bh
+   243 000001BA C3                      ret
+   244                                  
+   245 000001BB 30303A30303A3030        tmfld: db '00:00:00'
+   246                                  
+   247                                  dsptime:
+   248                                  ;Display the system time
+   249 000001C3 B413                    mov ah,13h ;function 13h (Display String)
+   250 000001C5 B000                    mov al,0 ;Write mode is zero
+   251 000001C7 B700                    mov bh,0 ;Use video page of zero
+   252 000001C9 B374                    mov bl,74h ;Attribute
+   253 000001CB B90800                  mov cx,8 ;Character string is 8 long
+   254 000001CE B606                    mov dh,6 ;position on row 6
+   255 000001D0 B202                    mov dl,2 ;and column 2
+   256 000001D2 1E                      push ds ;put ds register on stack
+   257 000001D3 07                      pop es ;pop it into es register
+   258 000001D4 8D2E[BB01]              lea bp,[tmfld] ;load the offset address of string into BP
+   259 000001D8 CD10                    int 10H
+   260 000001DA C3                      ret
+   261                                  
+   262 000001DB CD20                    int 20H
+   263                                  
+   264                                  
+   265 000001DD 306E6420736563746F-     msg1 db '0nd sector msg'
+   266 000001E6 72206D7367         
+   267                                  mlen1 equ $-msg1
+   268                                  
+   269 000001EB 4D79206E616D652069-     msg2 db 'My name is Gillian Lemke and you are working on my OS! It is called GLOS. GL for my initials and OS for, you know. It is pretty cool and has some fun colors. Right now it can display the time and this messa
+   270 000001F4 732047696C6C69616E-
+   271 000001FD 204C656D6B6520616E-
+   272 00000206 6420796F7520617265-
+   273 0000020F 20776F726B696E6720-
+   274 00000218 6F6E206D79204F5321-
+   275 00000221 204974206973206361-
+   276 0000022A 6C6C656420474C4F53-
+   277 00000233 2E20474C20666F7220-
+   278 0000023C 6D7920696E69746961-
+   279 00000245 6C7320616E64204F53-
+   280 0000024E 20666F722C20796F75-
+   281 00000257 206B6E6F772E204974-
+   282 00000260 206973207072657474-
+   283 00000269 7920636F6F6C20616E-
+   284 00000272 642068617320736F6D-
+   285 0000027B 652066756E20636F6C-
+   286 00000284 6F72732E2052696768-
+   287 0000028D 74206E6F7720697420-
+   288 00000296 63616E20646973706C-
+   289 0000029F 617920746865207469-
+   290 000002A8 6D6520616E64207468-
+   291 000002B1 6973206D6573736167-
+   292 000002BA 65206F6620636F7572-
+   293 000002C3 73652E204861707079-
+   294 000002CC 206861636B696E6721 
+   295                                  mlen2 equ $-msg2
+   296                                  
+   297 000002D5 24                      msg4 db '$'
+   298                                  mlen4 equ $-msg4
+   299                                  
+   300 000002D6 0E                      push cs
+   301 000002D7 1F                      pop ds
