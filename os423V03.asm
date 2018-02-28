@@ -1,6 +1,8 @@
 ; Gillian Lemke
 ; E01445800
 
+; use ctrl+c+d to go to next
+
   	org 0x7c00
  	 jmp short start
   	nop
