@@ -39,7 +39,9 @@ keyin:
 	jne keyin
 
 
-  ; display string without using BIOS int 10h
+
+; display string without using BIOS int 10h
+displayWithoutBios:
   mov ax, 3					; set VGA mode (text)
   int 0x10
 
@@ -65,15 +67,56 @@ keyin:
     jmp ForEachChar	   	; jump back to beginning of loop
   EndForEachChar:	   	; end of the loop
 
-  ret						; quit the program
+  ;ret						; quit the program
+
+keyinvisual:
+	mov ah, 0
+	int 16h
+	cmp ax, 0x2e03
+	cmp ax, 0x2004
+	jne keyinvisual
+
+
+mov bx,0xb800		;direct video memory access 0xB8000
+mov es,bx
+xor bx,bx		;es:bx : 0xb8000
+mov dh,0		;row from 0 to 24
+mov dl,0		;col from 0 to 79
+		
+.loop:
+	mov byte [es:bx], 207h	;char
+	inc bx
+	mov byte [es:bx], 8ah	;attribute 
+	inc bx
+
+.next:		
+	inc dl
+	cmp dl,80		;col 0-80
+	jne .loop
+	mov dl,0
+	inc dh
+	cmp dh,25	;rows
+	jne .loop
+
+
+
+mov ah,41h 
+mov dx,filename 
+int 21h 
+
+mov ax,4c00h
+int	21h
+
+
 
   ; optional extra display or others
   ; code to lad 2nd sector to 0001:2345 and execute
 
 ; data values
-msg db ''
+msg db 'Hello 423 by Gillian Lemke'
 mlen equ $-msg
 TextHelloWorld: db 'Hello 423 by Gillian Lemke ',0
+filename db "a.img",0
 
 ; 512 and 55aa
 padding	times 510-($-$$) db 0		;to make MBR 512 bytes
